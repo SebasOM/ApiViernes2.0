@@ -184,7 +184,7 @@ def buscarUsuarios(db:Session=Depends(getDataBase)):
 
     ####
 
-@rutas.post("/MetodoPago")
+@rutas.post("/MetodoPago", response_model=MetodoPagoDTORespuesta)
 def guardarUsuario(datosPeticion:MetodoPagoDTOPeticion, db:Session=Depends(getDataBase) ):
     try:
         metodoPago=MetodoPago(
@@ -194,7 +194,11 @@ def guardarUsuario(datosPeticion:MetodoPagoDTOPeticion, db:Session=Depends(getDa
         db.add(metodoPago)
         db.commit()
         db.refresh(metodoPago)
-        return metodoPago
+        return MetodoPagoDTORespuesta(
+            id=metodoPago.id,
+            nombreMetodo=metodoPago.nombreMetodo,
+            descripcion=metodoPago.descripcion
+        )
     except Exception as error:
         db.rollback()
         raise HTTPException(status_code=400, detail=f"Error al registrar el usuario XOXO{error}")
@@ -203,7 +207,13 @@ def guardarUsuario(datosPeticion:MetodoPagoDTOPeticion, db:Session=Depends(getDa
 def buscarUsuarios(db:Session=Depends(getDataBase)):
     try:
         listadoDeUsuarios=db.query(MetodoPago).all()
-        return listadoDeUsuarios
+        return [
+            MetodoPagoDTORespuesta(
+                id=metodoPago.id,
+                nombreMetodo=metodoPago.nombreMetodo,
+                descripcion=metodoPago.descripcion
+            ) for metodoPago in listadoDeUsuarios
+        ]
 
     except Exception as error:
         db.rollback()
